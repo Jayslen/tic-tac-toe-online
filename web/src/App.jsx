@@ -1,33 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Board } from './components/Board'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <main className="max-w-xl text-white mx-auto my-6">
+        <header>
+          <h1 className="text-5xl font-bold">Tic tac toe online</h1>
+          <p className="text-lg mt-2">
+            A simple tic tac toe game, online built with React and nodeJS using
+            web sockets.
+          </p>
+        </header>
+        <div className="flex gap-2">
+          <button className="bg-blue-500 rounded-md px-2 hover:bg-blue-800 grow-[1.5] transition-colors cursor-pointer">
+            Create lobby
+          </button>
+
+          <form className="grow flex gap-2">
+            <input className="grow border rounded-md p-2" type="text" />
+            <button className="bg-orange-500 rounded-md px-2 hover:bg-orange-800 transition-colors cursor-pointer">
+              Join a lobby
+            </button>
+          </form>
+        </div>
+
+        <Board/>
+      </main>
     </>
   )
 }
