@@ -7,13 +7,12 @@ export function Board({ lobbyId }) {
   const [board, setBoard] = useState(
     Array(9).fill({ piece: null, userId: null })
   )
-  // const [playerTurn, setPlayerTurn] = useState(null)
+  // const [winner, setWinner] = 
   const { id, name: userName } = JSON.parse(window.localStorage.getItem('user'))
   const turn = useRef(null)
   const socketRef = useRef(null)
-  const gameStarted = useRef(false)
-  
-  // console.log(`User id: ${id}`, `turn: ${playerTurn}`)
+  const gameStarted = useRef(true)
+
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -31,10 +30,10 @@ export function Board({ lobbyId }) {
       console.log('Socket conectado', socketRef.current.id)
     })
 
-    socketRef.current.on('gameConfig', (currentPlayerTurn, game) => {
-      turn.current = currentPlayerTurn
-      gameStarted.current = game
-      // setPlayerTurn(currentPlayerTurn)
+    socketRef.current.on('gameConfig', ({nextTurn, readyToPlay}) => {
+      console.log(readyToPlay, nextTurn)
+      turn.current = nextTurn
+      gameStarted.current = readyToPlay
     })
 
     socketRef.current.on(
@@ -42,7 +41,6 @@ export function Board({ lobbyId }) {
       ({ position, piece, userId, playerTurn }) => {
         console.log(position, piece, userId)
         turn.current = playerTurn
-        // setPlayerTurn(playerTurn)
         setBoard((prev) => {
           const newBoard = [...prev]
           newBoard[position] = { piece, userId }
@@ -52,7 +50,11 @@ export function Board({ lobbyId }) {
       }
     )
 
-    socketRef.current.on("setWinner", (user) => {
+    socketRef.current.on("setWinner", (winner) => {
+      alert(`el ganador es ${winner.id} ${winner.name}`)
+    })
+
+    socketRef.current.on('setWinner', (user) => {
       console.log(user)
     })
 
@@ -60,9 +62,8 @@ export function Board({ lobbyId }) {
       socketRef.current?.disconnect()
       socketRef.current = null
     }
-  })
+  }, [])
 
-  // console.log(turn.current)
   useEffect(() => {
     const winnigCombinations = [
       [0, 1, 2],
@@ -83,7 +84,7 @@ export function Board({ lobbyId }) {
 
     winnigCombinations.forEach((combination) => {
       if (combination.every((elm) => userMoves.includes(elm))) {
-        socketRef.current.emit(`${lobbyId}:winner`,id)
+        socketRef.current.emit(`${lobbyId}:winner`, id)
       }
     })
   }, [board])

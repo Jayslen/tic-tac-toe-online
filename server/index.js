@@ -41,17 +41,16 @@ io.on('connection', async (socket) => {
   }
   socket.join(lobbyId)
 
-  // if (await getUsersAmountOnRoom(io, lobbyId) !== 2) {
-  //   console.log('Cant start the game')
-  //   return
-  // }
-
-  io.to(lobbyId).emit('gameConfig', currentLobby.playerTurn.id, true)
+  if (await getUsersAmountOnRoom(io, lobbyId) === 1) {
+    console.log('Cant start the game')
+    io.to(lobbyId).emit('gameConfig', { nextTurn: null, readyToPlay: false })
+  } else {
+    io.to(lobbyId).emit('gameConfig', { nextTurn: currentLobby.playerTurn.id, readyToPlay: true })
+  }
 
   socket.on(`move:${lobbyId}`, (position) => {
     const { piece } = currentLobby.playerTurn
     currentLobby.updateBoard({ position })
-    console.log(currentLobby.playerTurn)
     io.to(lobbyId).emit('updateBoard', { position, piece, userId, playerTurn: currentLobby.playerTurn.id })
   })
 
