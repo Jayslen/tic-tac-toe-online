@@ -41,17 +41,24 @@ io.on('connection', async (socket) => {
   }
   socket.join(lobbyId)
 
-  if (await getUsersAmountOnRoom(io, lobbyId) !== 2) {
-    console.log('Cant start the game')
-  }
+  // if (await getUsersAmountOnRoom(io, lobbyId) !== 2) {
+  //   console.log('Cant start the game')
+  //   return
+  // }
 
-  io.to(lobbyId).emit('gameConfig', currentLobby.playerTurn.id)
+  io.to(lobbyId).emit('gameConfig', currentLobby.playerTurn.id, true)
 
   socket.on(`move:${lobbyId}`, (position) => {
     const { piece } = currentLobby.playerTurn
     currentLobby.updateBoard({ position })
     console.log(currentLobby.playerTurn)
     io.to(lobbyId).emit('updateBoard', { position, piece, userId, playerTurn: currentLobby.playerTurn.id })
+  })
+
+  socket.on(`${lobbyId}:winner`, (id) => {
+    const winner = currentLobby.players.find(player => player.id === id)
+
+    io.to(lobbyId).emit('setWinner', winner)
   })
 
   socket.on('disconnect', () => {
@@ -96,7 +103,6 @@ app.post('/joinLobby/:id', (req, res) => {
   }
 
   lobbies[lobbyIndex].addPlayer({ name, id })
-  console.log(currentLobbyPlayers)
 
   res.status(200).json({ lobbyId })
 })
