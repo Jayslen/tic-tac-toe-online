@@ -1,74 +1,17 @@
 import { createServer } from 'node:http'
-import { Server } from 'socket.io'
 import express, { json } from 'express'
 import cors from 'cors'
-import { Lobby } from './utils/Lobby.js'
+import { Lobby, User } from './utils/Entities.js'
+import { socket } from './socket.js'
+
+const lobbies = []
 
 const PORT = 3000
 const app = express()
 const server = createServer(app)
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173'
-  }
-})
+const { io } = socket({ lobbies, server })
 
-const lobbies = []
 lobbies.push(new Lobby('uzhfvi'))
-
-const getUsersAmountOnRoom = async (io, lobbyId) => {
-  return await io.in(lobbyId).fetchSockets().then(sockets => {
-    return sockets.length
-  })
-}
-
-io.on('connection', async (socket) => {
-  const { user, id: userId, lobbyId } = socket.handshake.auth
-  console.log('User:', userId, 'has connected')
-
-  const currentLobby = lobbies.find(lobby => lobby.id === lobbyId)
-
-  if (!currentLobby) {
-    console.log('That lobby does not exits')
-    return
-  }
-
-  const usersInLobby = await getUsersAmountOnRoom(io, lobbyId)
-
-  if (usersInLobby === 2) {
-    console.log('Lobby is full')
-    return
-  }
-  socket.join(lobbyId)
-
-  if (await getUsersAmountOnRoom(io, lobbyId) === 1) {
-    console.log('Cant start the game')
-    io.to(lobbyId).emit('gameConfig', { nextTurn: null, readyToPlay: false })
-  } else {
-    io.to(lobbyId).emit('gameConfig', { nextTurn: currentLobby.playerTurn.id, readyToPlay: true })
-  }
-
-  socket.on(`move:${lobbyId}`, (position) => {
-    const { piece } = currentLobby.playerTurn
-    currentLobby.updateBoard({ position })
-    io.to(lobbyId).emit('updateBoard', { position, piece, userId, playerTurn: currentLobby.playerTurn.id })
-  })
-
-  socket.on(`${lobbyId}:winner`, (id) => {
-    const winner = currentLobby.players.find(player => player.id === id)
-
-    io.to(lobbyId).emit('setWinner', winner)
-  })
-
-  socket.on('disconnect', () => {
-    const userIndex = currentLobby.players.findIndex(player => player.id === userId)
-    if (userIndex !== -1) {
-      currentLobby.players.splice(userIndex, 1)
-      currentLobby.playerTurn = null
-    }
-    console.log('User has left')
-  })
-})
 
 app.use(cors())
 app.use(json())
@@ -81,7 +24,7 @@ app.post('/createLobby', (req, res) => {
 
 app.post('/joinLobby/:id', (req, res) => {
   const { id: lobbyId } = req.params
-  const { userName: name, userId: id } = req.body
+  const { name, id } = req.body
 
   const lobbyIndex = lobbies.findIndex(lobby => lobby.id === lobbyId)
 
@@ -101,9 +44,9 @@ app.post('/joinLobby/:id', (req, res) => {
     return
   }
 
-  lobbies[lobbyIndex].addPlayer({ name, id })
+  lobbies[lobbyIndex].addPlayer(new User(name, id))
 
-  res.status(200).json({ lobbyId })
+  res.status(200).json({ lobbyId, user: { name, id } })
 })
 
 server.listen(PORT, () => {

@@ -19,3 +19,10 @@ export class Lobby {
     this.playerTurn = this.playerTurn.id === this.players[0].id ? this.players[1] : this.players[0]
   }
 }
+
+export class User {
+  constructor (name, id) {
+    this.name = name
+    this.id = id
+  }
+}
