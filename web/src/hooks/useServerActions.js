@@ -2,20 +2,21 @@ import { useState, useRef, useEffect } from 'react'
 import { io } from 'socket.io-client'
 
 
-export function useServerActions ({id, userName, lobbyId}) {
+export function useServerActions ({userId, userName, lobbyId}) {
     const [players, setPlayers] = useState([])
       const [board, setBoard] = useState(
       Array(9).fill({ piece: null, userId: null })
     )
   const socketRef = useRef(null)
   const turn = useRef(null)
-  const gameStarted = useRef(true)
+  const gameStatus = useRef(true)
 
+  console.log(userId)
     useEffect(() => {
     if (!socketRef.current) {
       socketRef.current = io('http://localhost:3000', {
         auth: {
-          id,
+          userId,
           userName,
           lobbyId,
         },
@@ -27,9 +28,11 @@ export function useServerActions ({id, userName, lobbyId}) {
       console.log('Socket conectado', socketRef.current.id)
     })
 
-    socketRef.current.on('gameConfig', ({nextTurn, readyToPlay, activePlayers}) => {
+    socketRef.current.on('gameConfig', ({nextTurn, activePlayers, readyToPlay, statusMsg }) => {
       turn.current = nextTurn
-      gameStarted.current = readyToPlay
+      gameStatus.current = {
+        readyToPlay, statusMsg
+      }
       setPlayers(activePlayers)
     })
 
@@ -60,5 +63,5 @@ export function useServerActions ({id, userName, lobbyId}) {
     }
   }, [])
 
-    return {board,socketRef, players, gameStarted, turn}
+    return {board,socketRef, players, gameStatus: {...gameStatus.current}, turn}
 }

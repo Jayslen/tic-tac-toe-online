@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 export function useLobbyManagement({ savedUser }) {
   const [lobby, setLobby] = useState(null)
@@ -7,16 +8,19 @@ export function useLobbyManagement({ savedUser }) {
 
   const createLobby = async () => {
     if (lobby) {
-      alert('You have a lobby started')
+      toast.error('You are in a lobby')
       return
     }
+
     try {
       const res = await fetch('http://localhost:3000/createLobby', {
         method: 'POST',
       })
-      if (res.ok) {
-        setLobby(await res.json())
-      }
+      const {lobbyId} = await res.json()
+      setLobby(lobbyId)
+      toast.success(`Lobby created:${lobbyId}`, {
+        duration: 5000
+      })
     } catch (e) {
       console.error(e)
     }
@@ -26,18 +30,17 @@ export function useLobbyManagement({ savedUser }) {
     e.preventDefault()
     const { lobbyId: inputId } = Object.fromEntries(new FormData(e.target))
 
-    const {name, userId} = {
-        name: userCredentials?.name ?? "Anonimoues",
-        userId: userCredentials?.id ?? crypto.randomUUID()
+    const { name, userId } = {
+      name: userCredentials?.name ?? 'Anonimoues',
+      userId: userCredentials?.id ?? crypto.randomUUID(),
     }
 
-    
     const res = await fetch(`http://localhost:3000/joinLobby/${inputId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, id:userId }),
+      body: JSON.stringify({ name, id: userId }),
     })
 
     const { lobbyId, user } = await res.json()
@@ -46,8 +49,8 @@ export function useLobbyManagement({ savedUser }) {
     setIsPlaying((prev) => !prev)
     // update userCredentials state with the endpoint's response if user is not logged as it generate it ramdon
     // is updated because the state is being pass to the board component to complte the socket auth data
-    if(!userCredentials) {
-        setUserCredentials({...user})
+    if (!userCredentials) {
+      setUserCredentials({ ...user })
     }
   }
 

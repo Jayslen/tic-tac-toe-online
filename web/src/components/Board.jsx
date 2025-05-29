@@ -1,15 +1,14 @@
 import { useEffect } from 'react'
 import { useServerActions } from '../hooks/useServerActions'
+import toast from 'react-hot-toast'
 
 export function Board({ lobbyId, user }) {
   const { id: userId, name: userName } = user
-  const { players, socketRef, board, gameStarted, turn } = useServerActions({
+  const { players, socketRef, board, gameStatus, turn } = useServerActions({
     userId,
     lobbyId,
     userName,
   })
-
-  console.log(players)
 
   useEffect(() => {
     const winnigCombinations = [
@@ -50,8 +49,8 @@ export function Board({ lobbyId, user }) {
               className="bg-white/30 rounded grid place-items-center font-bold text-5xl"
               key={index}
               onClick={() => {
-                if (!gameStarted.current) {
-                  alert('Cannot start the game')
+                if (!gameStatus.readyToPlay) {
+                 toast.error(gameStatus.statusMsg)
                   return
                 }
 

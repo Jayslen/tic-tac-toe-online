@@ -1,5 +1,6 @@
 import { Board } from './components/Board'
 import { useLobbyManagement } from './hooks/useLobbyManagement'
+import { Toaster } from 'react-hot-toast'
 
 function App() {
   const savedUser = JSON.parse(window.localStorage.getItem('user'))
@@ -27,11 +28,21 @@ function App() {
         <form className="flex gap-3 mb-4" onSubmit={createUser}>
           <input
             type="text"
-            className={`grow border rounded-md p-2 ${savedUser && 'bg-black/10 border-white/25 cursor-not-allowed opacity-30'}`}
+            className={`grow border rounded-md p-2 ${
+              savedUser &&
+              'bg-black/10 border-white/25 cursor-not-allowed opacity-30'
+            }`}
             name="userName"
-            disabled = {savedUser}
+            disabled={savedUser}
           />
-          <button className={`${savedUser ? "border border-white/25 bg-black/10 cursor-not-allowed opacity-30" : "bg-red-500 hover:bg-red-800 cursor-pointer"} rounded-md px-2 grow-[0.9]  transition-colors`} disabled={savedUser}>
+          <button
+            className={`${
+              savedUser
+                ? 'border border-white/25 bg-black/10 cursor-not-allowed opacity-30'
+                : 'bg-red-500 hover:bg-red-800 cursor-pointer'
+            } rounded-md px-2 grow-[0.9]  transition-colors`}
+            disabled={savedUser}
+          >
             Create user
           </button>
         </form>
@@ -57,6 +68,7 @@ function App() {
         </div>
 
         {isPlaying ? <Board lobbyId={lobby} user={userCredentials} /> : null}
+        <Toaster position="top-center" reverseOrder={false} />
       </main>
     </>
   )

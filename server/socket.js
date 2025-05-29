@@ -28,9 +28,19 @@ export function socket ({ lobbies, server }) {
 
     if (await getUsersAmountOnRoom(io, lobbyId) === 1) {
       console.log('Cant start the game')
-      io.to(lobbyId).emit('gameConfig', { nextTurn: null, readyToPlay: false, activePlayers: currentLobby.players })
+      io.to(lobbyId).emit('gameConfig', {
+        nextTurn: null,
+        activePlayers: currentLobby.players,
+        statusMsg: 'Waiting for the oponet',
+        readyToPlay: false
+      })
     } else {
-      io.to(lobbyId).emit('gameConfig', { nextTurn: currentLobby.playerTurn.id, readyToPlay: true, activePlayers: currentLobby.players })
+      io.to(lobbyId).emit('gameConfig', {
+        nextTurn: currentLobby.playerTurn.id,
+        activePlayers: currentLobby.players,
+        statusMsg: 'Game can start',
+        readyToPlay: true
+      })
     }
 
     socket.on(`move:${lobbyId}`, (position) => {
