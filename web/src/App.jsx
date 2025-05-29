@@ -11,6 +11,7 @@ function App() {
     createLobby,
     createUser,
     joinLobby,
+    closeBoard
   } = useLobbyManagement({ savedUser })
 
   return (
@@ -67,7 +68,7 @@ function App() {
           </form>
         </div>
 
-        {isPlaying ? <Board lobbyId={lobby} user={userCredentials} /> : null}
+        {isPlaying ? <Board lobbyId={lobby} user={userCredentials} endGame={closeBoard} /> : null}
         <Toaster position="top-center" reverseOrder={false} />
       </main>
     </>

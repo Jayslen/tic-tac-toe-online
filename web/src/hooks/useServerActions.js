@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { io } from 'socket.io-client'
 
 
-export function useServerActions ({userId, userName, lobbyId}) {
+export function useServerActions ({userId, userName, lobbyId, endGame}) {
     const [players, setPlayers] = useState([])
       const [board, setBoard] = useState(
       Array(9).fill({ piece: null, userId: null })
@@ -10,11 +11,12 @@ export function useServerActions ({userId, userName, lobbyId}) {
   const socketRef = useRef(null)
   const turn = useRef(null)
   const gameStatus = useRef(true)
+  const server = import.meta.env.VITE_SERVER
 
   console.log(userId)
     useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io('http://localhost:3000', {
+      socketRef.current = io(server, {
         auth: {
           userId,
           userName,
@@ -50,11 +52,8 @@ export function useServerActions ({userId, userName, lobbyId}) {
     )
 
     socketRef.current.on("setWinner", (winner) => {
-      alert(`el ganador es ${winner.id} ${winner.name}`)
-    })
-
-    socketRef.current.on('setWinner', (user) => {
-      console.log(user)
+      toast.success(`El ganador es ${winner.name}`)
+      endGame()
     })
 
     return () => {

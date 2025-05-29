@@ -5,6 +5,7 @@ export function useLobbyManagement({ savedUser }) {
   const [lobby, setLobby] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [userCredentials, setUserCredentials] = useState(savedUser)
+  const server = import.meta.env.VITE_SERVER
 
   const createLobby = async () => {
     if (lobby) {
@@ -13,7 +14,7 @@ export function useLobbyManagement({ savedUser }) {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/createLobby', {
+      const res = await fetch(`${server}/createLobby`, {
         method: 'POST',
       })
       const {lobbyId} = await res.json()
@@ -35,7 +36,7 @@ export function useLobbyManagement({ savedUser }) {
       userId: userCredentials?.id ?? crypto.randomUUID(),
     }
 
-    const res = await fetch(`http://localhost:3000/joinLobby/${inputId}`, {
+    const res = await fetch(`${server}/joinLobby/${inputId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,6 +53,7 @@ export function useLobbyManagement({ savedUser }) {
     if (!userCredentials) {
       setUserCredentials({ ...user })
     }
+    e.target.reset()
   }
 
   const createUser = (e) => {
@@ -65,6 +67,10 @@ export function useLobbyManagement({ savedUser }) {
       e.target.reset()
     }
   }
+
+  const closeBoard = () => {
+    setIsPlaying(false)
+  }
   return {
     userCredentials,
     isPlaying,
@@ -72,5 +78,6 @@ export function useLobbyManagement({ savedUser }) {
     createLobby,
     joinLobby,
     createUser,
+    closeBoard
   }
 }

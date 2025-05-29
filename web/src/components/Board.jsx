@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 import { useServerActions } from '../hooks/useServerActions'
 import toast from 'react-hot-toast'
 
-export function Board({ lobbyId, user }) {
+export function Board({ lobbyId, user, endGame }) {
   const { id: userId, name: userName } = user
   const { players, socketRef, board, gameStatus, turn } = useServerActions({
     userId,
     lobbyId,
     userName,
+    endGame
   })
 
   useEffect(() => {
@@ -50,17 +51,19 @@ export function Board({ lobbyId, user }) {
               key={index}
               onClick={() => {
                 if (!gameStatus.readyToPlay) {
-                 toast.error(gameStatus.statusMsg)
+                  toast.error(gameStatus.statusMsg)
                   return
                 }
 
                 if (turn.current !== userId) {
-                  alert('Is not your turn')
+                  toast('Is not your turn', {
+                    icon: '🙅🏽‍♂️',
+                  })
                   return
                 }
 
                 if (board[index].piece) {
-                  alert('Cannot replace a piece')
+                  toast.error("Cannot replace a move")
                   return
                 }
 
