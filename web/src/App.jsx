@@ -1,55 +1,16 @@
 import { Board } from './components/Board'
-import { useState } from 'react'
+import { useLobbyManagement } from './hooks/useLobbyManagement'
 
 function App() {
-  const [lobby, setLobby] = useState(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-
-  const createLobby = async () => {
-    if (lobby) {
-      alert('You have a lobby started')
-      return
-    }
-    try {
-      const res = await fetch('http://localhost:3000/createLobby', {
-        method: 'POST',
-      })
-      if (res.ok) {
-        setLobby(await res.json())
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  console.log(lobby)
-
-
-  const joinLobby = async (e) => {
-    e.preventDefault()
-    const { lobbyId } = Object.fromEntries(new FormData(e.target))
-    if (!window.localStorage.getItem('user')) {
-      window.localStorage.setItem(
-        'user',
-        JSON.stringify({ id: crypto.randomUUID(), name: 'Unknown'})
-      )
-    }
-
-    const {name: userName, id: userId} = JSON.parse(localStorage.getItem("user"))
-    const res = await fetch(`http://localhost:3000/joinLobby/${lobbyId}`, {
-      method: 'POST',
-      headers: {
-        "Content-Type" : "application/json"
-      },
-      body: JSON.stringify({userName, userId})
-    })
-
-    const {lobbyId : id} = await res.json()
-
-    setLobby(id)
-    setIsPlaying(prev => !prev)
-
-  }
+  const savedUser = JSON.parse(window.localStorage.getItem('user'))
+  const {
+    userCredentials,
+    isPlaying,
+    lobby,
+    createLobby,
+    createUser,
+    joinLobby,
+  } = useLobbyManagement({ savedUser })
 
   return (
     <>
@@ -60,7 +21,21 @@ function App() {
             A simple tic tac toe game, online built with React and nodeJS using
             web sockets.
           </p>
+          {userCredentials && <p>User logged as: {userCredentials?.name}</p>}
         </header>
+
+        <form className="flex gap-3 mb-4" onSubmit={createUser}>
+          <input
+            type="text"
+            className={`grow border rounded-md p-2 ${savedUser && 'bg-black/10 border-white/25 cursor-not-allowed opacity-30'}`}
+            name="userName"
+            disabled = {savedUser}
+          />
+          <button className={`${savedUser ? "border border-white/25 bg-black/10 cursor-not-allowed opacity-30" : "bg-red-500 hover:bg-red-800 cursor-pointer"} rounded-md px-2 grow-[0.9]  transition-colors`} disabled={savedUser}>
+            Create user
+          </button>
+        </form>
+
         <div className="flex gap-2">
           <button
             className="bg-blue-500 rounded-md px-2 hover:bg-blue-800 grow-[1.5] transition-colors cursor-pointer"
@@ -81,7 +56,7 @@ function App() {
           </form>
         </div>
 
-        {isPlaying ? <Board lobbyId={lobby}/> : null}
+        {isPlaying ? <Board lobbyId={lobby} user={userCredentials} /> : null}
       </main>
     </>
   )
