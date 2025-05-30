@@ -42,7 +42,6 @@ export function useLobbyManagement({ savedUser }) {
     }
 
     try {
-
       const res = await fetch(`${server}/joinLobby/${inputId}`, {
         method: 'POST',
         headers: {

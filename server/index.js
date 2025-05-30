@@ -26,7 +26,7 @@ app.post('/joinLobby/:id', (req, res) => {
   const { id: lobbyId } = req.params
   const { name, id } = req.body
 
-  const lobbyIndex = lobbies.findIndex(lobby => lobby.id === lobbyId)
+  const lobbyIndex = lobbies.findIndex((lobby) => lobby.id === lobbyId)
 
   if (lobbyIndex === -1) {
     res.status(404).json({ msg: 'Lobby not found' })
@@ -35,9 +35,21 @@ app.post('/joinLobby/:id', (req, res) => {
 
   const currentLobbyPlayers = lobbies[lobbyIndex].players
 
-  if (currentLobbyPlayers.length === 2) return
+  const wasUserInLobby = currentLobbyPlayers.find((player) => player.id === id)
 
-  const isUserInLobby = currentLobbyPlayers.find(player => player.id === lobbyId)
+  if (wasUserInLobby) {
+    res.status(200).json({ lobbyId, user: { name, id } })
+    return
+  }
+
+  if (currentLobbyPlayers.length === 2) {
+    res.status(403).json({ msg: 'The lobby is full. And just users that were in lobby can re-join ' })
+    return
+  }
+
+  const isUserInLobby = currentLobbyPlayers.find(
+    (player) => player.id === lobbyId
+  )
 
   if (isUserInLobby) {
     console.log('user exist')
@@ -46,7 +58,7 @@ app.post('/joinLobby/:id', (req, res) => {
 
   lobbies[lobbyIndex].addPlayer(new User(name, id))
 
-  res.status(200).json({ lobbyId, user: { name, id } })
+  res.status(201).json({ lobbyId, user: { name, id } })
 })
 
 server.listen(PORT, () => {

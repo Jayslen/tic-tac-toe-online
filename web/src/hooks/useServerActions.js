@@ -30,12 +30,16 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
       console.log('Socket conectado', socketRef.current.id)
     })
 
-    socketRef.current.on('gameConfig', ({nextTurn, activePlayers, readyToPlay, statusMsg }) => {
+    socketRef.current.on('gameConfig', ({nextTurn, activePlayers, readyToPlay, statusMsg, board }) => {
       turn.current = nextTurn
       gameStatus.current = {
         readyToPlay, statusMsg
       }
       setPlayers(activePlayers)
+
+      if(board) {
+        setBoard(board)
+      }
     })
 
     socketRef.current.on(

@@ -39,7 +39,8 @@ export function socket ({ lobbies, server }) {
         nextTurn: currentLobby.playerTurn.id,
         activePlayers: currentLobby.players,
         statusMsg: 'Game can start',
-        readyToPlay: true
+        readyToPlay: true,
+        board: currentLobby.board
       })
     }
 
@@ -58,13 +59,10 @@ export function socket ({ lobbies, server }) {
     socket.on('disconnect', async () => {
       const lobbyIndex = lobbies.findIndex(lobby => lobby.id === currentLobby.id)
 
-      console.log(lobbies[lobbyIndex])
-
       if (await getUsersAmountOnRoom(io, lobbyId) === 0) {
         // remove lobby from lobbies if no users are left
         if (lobbyIndex !== -1) {
           lobbies.splice(lobbyIndex, 1)
-          console.log('Lobby removed:', currentLobby.id)
         }
       }
     })
