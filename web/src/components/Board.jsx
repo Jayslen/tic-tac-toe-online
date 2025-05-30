@@ -39,8 +39,8 @@ export function Board({ lobbyId, user, endGame }) {
   return (
     <>
       <header className="flex justify-between">
-        {players.map(({ name }) => {
-          return <span>{name}</span>
+        {players.map(({ name,id }) => {
+          return <span key={id}>{name}</span>
         })}
       </header>
       <div className="grid grid-cols-3 gap-4 grid-rows-3 w-3/4 h-96 mx-auto mt-5">

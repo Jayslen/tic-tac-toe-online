@@ -31,29 +31,45 @@ export function useLobbyManagement({ savedUser }) {
     e.preventDefault()
     const { lobbyId: inputId } = Object.fromEntries(new FormData(e.target))
 
+    if(inputId.trim().length === 0) {
+      toast.error("Type a lobby")
+      return
+    }
+
     const { name, userId } = {
       name: userCredentials?.name ?? 'Anonimoues',
       userId: userCredentials?.id ?? crypto.randomUUID(),
     }
 
-    const res = await fetch(`${server}/joinLobby/${inputId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, id: userId }),
-    })
+    try {
 
-    const { lobbyId, user } = await res.json()
+      const res = await fetch(`${server}/joinLobby/${inputId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, id: userId }),
+      })
 
-    setLobby(lobbyId)
-    setIsPlaying((prev) => !prev)
-    // update userCredentials state with the endpoint's response if user is not logged as it generate it ramdon
-    // is updated because the state is being pass to the board component to complte the socket auth data
-    if (!userCredentials) {
-      setUserCredentials({ ...user })
+      if(res.ok) {
+        const { lobbyId, user } = await res.json()
+        setLobby(lobbyId)
+        setIsPlaying((prev) => !prev)
+        // update userCredentials state with the endpoint's response if user is not logged as it generate it ramdon
+        // is updated because the state is being pass to the board component to complte the socket auth data
+        if (!userCredentials) {
+          setUserCredentials({ ...user })
+        }
+      } else {
+        const {msg} = await res.json()
+        toast.error(msg)
+      }
+      
+      
+    } catch (e) {
+      console.error(e)
     }
-    e.target.reset()
+    // e.target.reset()
   }
 
   const createUser = (e) => {

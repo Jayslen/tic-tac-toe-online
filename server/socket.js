@@ -55,13 +55,18 @@ export function socket ({ lobbies, server }) {
       io.to(lobbyId).emit('setWinner', winner)
     })
 
-    socket.on('disconnect', () => {
-      const userIndex = currentLobby.players.findIndex(player => player.id === userId)
-      if (userIndex !== -1) {
-        currentLobby.players.splice(userIndex, 1)
-        currentLobby.playerTurn = null
+    socket.on('disconnect', async () => {
+      const lobbyIndex = lobbies.findIndex(lobby => lobby.id === currentLobby.id)
+
+      console.log(lobbies[lobbyIndex])
+
+      if (await getUsersAmountOnRoom(io, lobbyId) === 0) {
+        // remove lobby from lobbies if no users are left
+        if (lobbyIndex !== -1) {
+          lobbies.splice(lobbyIndex, 1)
+          console.log('Lobby removed:', currentLobby.id)
+        }
       }
-      console.log('User has left')
     })
   })
 
