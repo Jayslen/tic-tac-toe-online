@@ -37,7 +37,7 @@ export function useLobbyManagement({ savedUser }) {
     }
 
     const { name, userId } = {
-      name: userCredentials?.name ?? 'Anonimoues',
+      name: userCredentials?.name ?? 'Anonymous',
       userId: userCredentials?.id ?? crypto.randomUUID(),
     }
 

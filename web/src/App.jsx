@@ -16,17 +16,17 @@ function App() {
 
   return (
     <>
-      <main className="max-w-xl text-white mx-auto my-6">
+      <main className="max-w-xl text-white mx-4 my-6 md:mx-auto">
         <header>
-          <h1 className="text-5xl font-bold">Tic tac toe online</h1>
-          <p className="text-lg mt-2">
+          <h1 className="text-5xl font-bold my-1">Tic tac toe online</h1>
+          <p className="text-lg my-2">
             A simple tic tac toe game, online built with React and nodeJS using
             web sockets.
           </p>
-          {userCredentials && <p>User logged as: {userCredentials?.name}</p>}
+          {userCredentials && <p className='my-1'>User logged as: {userCredentials?.name}</p>}
         </header>
 
-        <form className="flex gap-3 mb-4" onSubmit={createUser}>
+        <form className="flex gap-3 my-3" onSubmit={createUser}>
           <input
             type="text"
             className={`grow border rounded-md p-2 ${
@@ -48,7 +48,7 @@ function App() {
           </button>
         </form>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 my-3">
           <button
             className="bg-blue-500 rounded-md px-2 hover:bg-blue-800 grow-[1.5] transition-colors cursor-pointer"
             onClick={createLobby}
