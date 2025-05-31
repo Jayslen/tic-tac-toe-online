@@ -11,9 +11,11 @@ const app = express()
 const server = createServer(app)
 const { io } = socket({ lobbies, server })
 
-lobbies.push(new Lobby('uzhfvi'))
+if (process.env.NODE_ENV !== 'production') {
+  lobbies.push(new Lobby('uzhfvi'))
+}
 
-app.use(cors())
+app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:5173' }))
 app.use(json())
 
 app.post('/createLobby', (req, res) => {
