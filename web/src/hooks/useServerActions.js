@@ -13,7 +13,6 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
   const gameStatus = useRef(true)
   const server = import.meta.env.VITE_SERVER
 
-  console.log(userId)
     useEffect(() => {
     if (!socketRef.current) {
       socketRef.current = io(server, {

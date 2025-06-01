@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 export function useLobbyManagement({ savedUser }) {
   const [lobby, setLobby] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [userCredentials, setUserCredentials] = useState(savedUser)
+  // const [userCredentials, setUserCredentials] = useState(savedUser)
+  const userCredentials = useRef(savedUser ?? {name: 'Anonymous', id: crypto.randomUUID()})
   const server = import.meta.env.VITE_SERVER
 
   const createLobby = async () => {
@@ -36,10 +37,7 @@ export function useLobbyManagement({ savedUser }) {
       return
     }
 
-    const { name, userId } = {
-      name: userCredentials?.name ?? 'Anonymous',
-      userId: userCredentials?.id ?? crypto.randomUUID(),
-    }
+    const { name, id:userId } = userCredentials.current
 
     try {
       const res = await fetch(`${server}/joinLobby/${inputId}`, {
@@ -51,20 +49,13 @@ export function useLobbyManagement({ savedUser }) {
       })
 
       if(res.ok) {
-        const { lobbyId, user } = await res.json()
+        const { lobbyId } = await res.json()
         setLobby(lobbyId)
         setIsPlaying((prev) => !prev)
-        // update userCredentials state with the endpoint's response if user is not logged as it generate it ramdon
-        // is updated because the state is being pass to the board component to complte the socket auth data
-        if (!userCredentials) {
-          setUserCredentials({ ...user })
-        }
       } else {
         const {msg} = await res.json()
         toast.error(msg)
       }
-      
-      
     } catch (e) {
       console.error(e)
     }
@@ -77,7 +68,10 @@ export function useLobbyManagement({ savedUser }) {
 
     if (name.trim().length > 0) {
       const newUser = { name, id: crypto.randomUUID() }
-      setUserCredentials(newUser)
+      userCredentials.current = newUser
+      toast.success(`User created: ${name}`, {
+        duration: 5000
+      })
       window.localStorage.setItem('user', JSON.stringify(newUser))
       e.target.reset()
     }

@@ -40,7 +40,7 @@ app.post('/joinLobby/:id', (req, res) => {
   const wasUserInLobby = currentLobbyPlayers.find((player) => player.id === id)
 
   if (wasUserInLobby) {
-    res.status(200).json({ lobbyId, user: { name, id } })
+    res.status(200).json({ lobbyId })
     return
   }
 
@@ -60,7 +60,7 @@ app.post('/joinLobby/:id', (req, res) => {
 
   lobbies[lobbyIndex].addPlayer(new User(name, id))
 
-  res.status(201).json({ lobbyId, user: { name, id } })
+  res.status(201).json({ lobbyId })
 })
 
 server.listen(PORT, () => {
