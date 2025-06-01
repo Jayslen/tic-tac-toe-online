@@ -2,14 +2,21 @@ import { createServer } from 'node:http'
 import express, { json } from 'express'
 import cors from 'cors'
 import { Lobby, User } from './utils/Entities.js'
-import { socket } from './socket.js'
+import { socketEvents } from './socketEvents.js'
+import { Server } from 'socket.io'
 
 const lobbies = []
 
 const PORT = process.env.PORT ?? 3000
 const app = express()
 const server = createServer(app)
-const { io } = socket({ lobbies, server })
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:5173'
+  }
+})
+
+socketEvents({ io, lobbies, server })
 
 if (process.env.NODE_ENV !== 'production') {
   lobbies.push(new Lobby('uzhfvi'))
