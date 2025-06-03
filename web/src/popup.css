@@ -1,0 +1,28 @@
+#backdrop {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#backdrop div {
+    animation: pop 0.3s ease-in-out;
+    
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

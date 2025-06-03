@@ -1,4 +1,5 @@
 import { Board } from './components/Board'
+import { Popup } from './components/Popup'
 import { useLobbyManagement } from './hooks/useLobbyManagement'
 import { Toaster } from 'react-hot-toast'
 
@@ -23,7 +24,8 @@ function App() {
             A simple tic tac toe game, online built with React and nodeJS using
             web sockets.
           </p>
-          {userCredentials && <p className='my-1'>User logged as: {userCredentials?.name}</p>}
+          {userCredentials.current && <p className='my-1'>User logged as: {userCredentials.current?.name}</p>}
+          {lobby && <p className=''>Lobby: {lobby}</p>}
         </header>
 
         <form className="flex gap-3 my-3" onSubmit={createUser}>
@@ -68,7 +70,7 @@ function App() {
           </form>
         </div>
 
-        {isPlaying ? <Board lobbyId={lobby} user={userCredentials} endGame={closeBoard} /> : null}
+        {isPlaying ? <Board lobbyId={lobby} user={userCredentials.current} endGame={closeBoard} /> : null}
         <Toaster position="top-center" reverseOrder={false} />
       </main>
     </>

@@ -4,7 +4,6 @@ import toast from 'react-hot-toast'
 export function useLobbyManagement({ savedUser }) {
   const [lobby, setLobby] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  // const [userCredentials, setUserCredentials] = useState(savedUser)
   const userCredentials = useRef(savedUser ?? {name: 'Anonymous', id: crypto.randomUUID()})
   const server = import.meta.env.VITE_SERVER
 
@@ -79,6 +78,7 @@ export function useLobbyManagement({ savedUser }) {
 
   const closeBoard = () => {
     setIsPlaying(false)
+    setLobby(null)
   }
   return {
     userCredentials,

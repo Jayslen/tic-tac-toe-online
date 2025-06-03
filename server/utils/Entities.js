@@ -4,6 +4,7 @@ export class Lobby {
     this.players = []
     this.board = Array(9).fill({ playerId: null, piece: null })
     this.playerTurn = null
+    this.rematch = []
   }
 
   addPlayer ({ name, id }) {
@@ -17,6 +18,11 @@ export class Lobby {
     const { playerId, piece } = this.playerTurn
     this.board[position] = { playerId, piece }
     this.playerTurn = this.playerTurn.id === this.players[0].id ? this.players[1] : this.players[0]
+  }
+
+  resetGame () {
+    this.board = Array(9).fill({ playerId: null, piece: null })
+    this.rematch = []
   }
 }
 

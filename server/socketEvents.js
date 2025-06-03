@@ -1,25 +1,18 @@
 export function socketEvents ({ io, lobbies, server }) {
   io.on('connection', async (socket) => {
     const { userId, lobbyId } = socket.handshake.auth
-    console.log('User:', userId, 'has connected')
 
     const currentLobby = lobbies.find(lobby => lobby.id === lobbyId)
 
-    if (!currentLobby) {
-      console.log('That lobby does not exits')
-      return
-    }
+    if (!currentLobby) return
 
     const usersInLobby = await getUsersAmountOnRoom(io, lobbyId)
 
-    if (usersInLobby === 2) {
-      console.log('Lobby is full')
-      return
-    }
+    if (usersInLobby === 2) return
+
     socket.join(lobbyId)
 
     if (await getUsersAmountOnRoom(io, lobbyId) === 1) {
-      console.log('Cant start the game')
       io.to(lobbyId).emit('gameConfig', {
         nextTurn: null,
         activePlayers: currentLobby.players,
@@ -48,6 +41,32 @@ export function socketEvents ({ io, lobbies, server }) {
       io.to(lobbyId).emit('setWinner', winner)
     })
 
+    socket.on(`${lobbyId}:rematch`, (rematchResponse) => {
+      const hasUserAlreadyResponded = currentLobby.rematch.find(({ userId: id }) => id === userId)
+
+      if (!rematchResponse) {
+        io.to(lobbyId).emit('endGame')
+        return
+      }
+
+      if (hasUserAlreadyResponded) return
+
+      currentLobby.rematch.push({ userId, response: rematchResponse })
+
+      const isRematchReady = currentLobby.rematch.every(({ response }) => response) && currentLobby.rematch.length === 2
+
+      if (isRematchReady) {
+        currentLobby.resetGame()
+        io.to(lobbyId).emit('gameConfig', {
+          nextTurn: currentLobby.playerTurn.id,
+          activePlayers: currentLobby.players,
+          statusMsg: 'Rematch accepted',
+          readyToPlay: true,
+          board: currentLobby.board,
+          isRematch: true
+        })
+      }
+    })
     socket.on('disconnect', async () => {
       const lobbyIndex = lobbies.findIndex(lobby => lobby.id === currentLobby.id)
 
@@ -58,13 +77,13 @@ export function socketEvents ({ io, lobbies, server }) {
         }
       }
     })
+
+    return { io }
   })
 
-  return { io }
-}
-
-const getUsersAmountOnRoom = async (io, lobbyId) => {
-  return await io.in(lobbyId).fetchSockets().then(sockets => {
-    return sockets.length
-  })
+  const getUsersAmountOnRoom = async (io, lobbyId) => {
+    return await io.in(lobbyId).fetchSockets().then(sockets => {
+      return sockets.length
+    })
+  }
 }

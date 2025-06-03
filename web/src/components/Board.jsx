@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { useServerActions } from '../hooks/useServerActions'
 import toast from 'react-hot-toast'
+import {Popup} from './Popup'
 
 export function Board({ lobbyId, user, endGame }) {
   const { id: userId, name: userName } = user
-  const { players, socketRef, board, gameStatus, turn } = useServerActions({
+  const { players, socketRef, board, gameStatus, turn, isGameFinished, handleRematch } = useServerActions({
     userId,
     lobbyId,
     userName,
@@ -75,6 +76,7 @@ export function Board({ lobbyId, user, endGame }) {
           )
         })}
       </div>
+      {isGameFinished && <Popup user={isGameFinished.name} handleRematch={handleRematch} endGame={endGame}/>}
     </>
   )
 }

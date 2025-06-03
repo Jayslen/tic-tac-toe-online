@@ -8,6 +8,7 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
       const [board, setBoard] = useState(
       Array(9).fill({ piece: null, userId: null })
     )
+  const [isGameFinished, setIsGameFinished] = useState(false)
   const socketRef = useRef(null)
   const turn = useRef(null)
   const gameStatus = useRef(true)
@@ -29,8 +30,14 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
       console.log('Socket conectado', socketRef.current.id)
     })
 
-    socketRef.current.on('gameConfig', ({nextTurn, activePlayers, readyToPlay, statusMsg, board }) => {
+    socketRef.current.on('gameConfig', ({nextTurn, activePlayers, readyToPlay, statusMsg, board, isRematch }) => {
       turn.current = nextTurn
+      if(isRematch) {
+        toast.success(statusMsg)
+        setBoard(board)
+        setIsGameFinished(false)
+        return
+      }
       gameStatus.current = {
         readyToPlay, statusMsg
       }
@@ -55,15 +62,28 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
     )
 
     socketRef.current.on("setWinner", (winner) => {
-      toast.success(`El ganador es ${winner.name}`)
-      endGame()
+      setIsGameFinished(winner)
+      // toast.success(`El ganador es ${winner.name}`)
+      // endGame()
     })
 
+    socketRef.current.on('endGame', () => {
+      toast.error('No rematch was requested')
+      socketRef.current.disconnect()
+      endGame()
+    })
+    
+    
     return () => {
       socketRef.current?.disconnect()
       socketRef.current = null
     }
   }, [])
+  
+      const handleRematch  = ({remathcResponse}) => {
 
-    return {board,socketRef, players, gameStatus: {...gameStatus.current}, turn}
+        socketRef.current.emit(`${lobbyId}:rematch`, remathcResponse )
+      }
+
+    return {board,socketRef, players, gameStatus: {...gameStatus.current}, turn, isGameFinished, handleRematch}
 }
