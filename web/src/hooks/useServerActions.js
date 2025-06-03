@@ -61,14 +61,24 @@ export function useServerActions ({userId, userName, lobbyId, endGame}) {
       }
     )
 
-    socketRef.current.on("setWinner", (winner) => {
-      setIsGameFinished(winner)
-      // toast.success(`El ganador es ${winner.name}`)
-      // endGame()
+    socketRef.current.on("gameEnded", ({status, winner, lastMove}) => {
+      setBoard((prev) => {
+        const newBoard = [...prev]
+        newBoard[lastMove.position] = { piece: lastMove.piece, userId: lastMove.userId }
+        return newBoard
+      })
+    
+      setIsGameFinished({status,winner})
+      // setIsGameFinished(winner)
+      if(status === 'draw') {
+        toast.error('El juego ha terminado en empate')
+      } else {
+        toast.success(`El ganador es ${winner.name}`)
+      }
     })
 
-    socketRef.current.on('endGame', () => {
-      toast.error('No rematch was requested')
+    socketRef.current.on('endGame', (msg) => {
+      toast.error(msg)
       socketRef.current.disconnect()
       endGame()
     })

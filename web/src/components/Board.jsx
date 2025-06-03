@@ -12,30 +12,6 @@ export function Board({ lobbyId, user, endGame }) {
     endGame
   })
 
-  useEffect(() => {
-    const winnigCombinations = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ]
-
-    const userMoves = board
-      .map((data, index) => {
-        return data.userId === userId ? index : null
-      })
-      .filter((data) => data !== null)
-
-    winnigCombinations.forEach((combination) => {
-      if (combination.every((elm) => userMoves.includes(elm))) {
-        socketRef.current.emit(`${lobbyId}:winner`, userId)
-      }
-    })
-  }, [board])
 
   return (
     <>
@@ -76,7 +52,7 @@ export function Board({ lobbyId, user, endGame }) {
           )
         })}
       </div>
-      {isGameFinished && <Popup user={isGameFinished.name} handleRematch={handleRematch} endGame={endGame}/>}
+      {isGameFinished && <Popup gameInfo={isGameFinished} handleRematch={handleRematch} endGame={endGame}/>}
     </>
   )
 }

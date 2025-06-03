@@ -1,6 +1,6 @@
 export function socketEvents ({ io, lobbies, server }) {
   io.on('connection', async (socket) => {
-    const { userId, lobbyId } = socket.handshake.auth
+    const { userName, userId, lobbyId } = socket.handshake.auth
 
     const currentLobby = lobbies.find(lobby => lobby.id === lobbyId)
 
@@ -12,6 +12,7 @@ export function socketEvents ({ io, lobbies, server }) {
 
     socket.join(lobbyId)
 
+    // refactor this logic
     if (await getUsersAmountOnRoom(io, lobbyId) === 1) {
       io.to(lobbyId).emit('gameConfig', {
         nextTurn: null,
@@ -32,20 +33,32 @@ export function socketEvents ({ io, lobbies, server }) {
     socket.on(`move:${lobbyId}`, (position) => {
       const { piece } = currentLobby.playerTurn
       currentLobby.updateBoard({ position })
-      io.to(lobbyId).emit('updateBoard', { position, piece, userId, playerTurn: currentLobby.playerTurn.id })
-    })
 
-    socket.on(`${lobbyId}:winner`, (id) => {
-      const winner = currentLobby.players.find(player => player.id === id)
+      const gameResult = currentLobby.checkGameResult({ userId })
 
-      io.to(lobbyId).emit('setWinner', winner)
+      if (gameResult?.status === 'win') {
+        const { status, winner } = gameResult
+        io.to(lobbyId).emit('gameEnded', {
+          status,
+          winner,
+          lastMove: {
+            position,
+            piece,
+            userId
+          }
+        })
+      } else if (gameResult?.status === 'draw') {
+        io.to(lobbyId).emit('gameEnded', { status: 'draw', lastMove: { position, piece, userId } })
+      } else {
+        io.to(lobbyId).emit('updateBoard', { position, piece, userId, playerTurn: currentLobby.playerTurn.id })
+      }
     })
 
     socket.on(`${lobbyId}:rematch`, (rematchResponse) => {
       const hasUserAlreadyResponded = currentLobby.rematch.find(({ userId: id }) => id === userId)
 
       if (!rematchResponse) {
-        io.to(lobbyId).emit('endGame')
+        io.to(lobbyId).emit('endGame', `${userName} did not accept the rematch`)
         return
       }
 
@@ -67,6 +80,7 @@ export function socketEvents ({ io, lobbies, server }) {
         })
       }
     })
+
     socket.on('disconnect', async () => {
       const lobbyIndex = lobbies.findIndex(lobby => lobby.id === currentLobby.id)
 
